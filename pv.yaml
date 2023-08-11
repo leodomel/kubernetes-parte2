@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-1
+spec:
+  capacity:
+    storage: 10Gi
+  acessModes:
+    - ReadWriteOnce #um pods rw por vez
+    #- ReadOnlyMany #multiplos pods somente podem ler mesmo tempo
+    #- ReadWriteMany #multiplos pods rw mesmo tempo
+  gcePersistentDisk:
+    pdName: pv-disk #nome definido no google cloud platform
+  storageClassName: standard
+
+  # Abrir terminal do Google Cloud Platform
+  # copiar o conteúdo desse arquivo para um arquivo lá 
+  # kubectl apply -f pv.yaml
+  #kubectl get pv
+  # Reclaim policy - Retain(Caso nao tenha nenhum claim para esse pv, permanecerá )
+
+
+
+
+  # PersistentVolumes possuem ciclos de vida independentes de Pods.
+
+  # É necessário um PersistentVolumeClaim para acessar um PersistentVolume.

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-noticias-deployment
+spec:
+  template:
+    metadata: # é do pod dentro do deployment
+      name: db-noticias
+      labels: #labelSSS
+        app: db-noticias
+    spec:
+      containers: # containers do pod dentro do deployment
+        - name: db-noticias-container
+          image: aluracursos/mysql-db:1
+          ports:
+            - containerPort: 3306
+          envFrom: #3a forma
+            - configMapRef:
+                name: db-configmap
+        # Aponta como erro, mas no curso não fala de resources, por isso vou salvar sem eles
+        # One or more containers do not have resource limits - this could starve other processes
+          # resources:
+          #   limits:
+          #     memory: "128Mi"
+          #     cpu: "500m"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-noticias
+
+#delete pod db-noticias
+
+
+    #1a forma
+    #  env:
+        #- name: "MYSQL_ROOT_PASSWORD"
+        #  valueFrom: "q1w2e3r4"
+        #- name: "MYSQL_DATABASE"
+        #  value: "empresa"
+        #- name: "MYSQL_PASSWORD"
+        #  value: "q1w2e3r4"    
+    # 2a forma
+    #  env:
+    #    - name: "MYSQL_ROOT_PASSWORD"
+    #      valueFrom: 
+    #        configMapKeyRef:
+    #          name: db-configmap
+    #          key: "MYSQL_ROOT_PASSWORD"
+    #    - name: "MYSQL_DATABASE"
+    #      valueFrom:
+    #        configMapKeyRef:
+    #          name: db-configmap
+    #          key: "MYSQL_DATABASE" 
+    #    - name: "MYSQL_PASSWORD"
+    #      valueFrom:
+    #        configMapKeyRef:
+    #          name: db-configmap
+    #          key: "MYSQL_PASSWORD"

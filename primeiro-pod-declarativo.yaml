@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: primeiro-pod-nginx-leo
+spec:
+    containers:
+        - name: nginx-leo2
+          image: nginx:latest
+        - name: redis-leo2
+          image: redis:latest

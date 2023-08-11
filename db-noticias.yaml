@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-noticias
+  labels:
+    app: db-noticias
+spec:
+  containers:
+    - name: db-noticias-container
+      image: aluracursos/mysql-db:1
+      ports:
+        - containerPort: 3306
+      envFrom: #3a forma
+      - configMapRef:
+         name: db-configmap 
+    #1a forma
+    #  env:
+        #- name: "MYSQL_ROOT_PASSWORD"
+        #  valueFrom: "q1w2e3r4"
+        #- name: "MYSQL_DATABASE"
+        #  value: "empresa"
+        #- name: "MYSQL_PASSWORD"
+        #  value: "q1w2e3r4"    
+    # 2a forma
+    #  env:
+    #    - name: "MYSQL_ROOT_PASSWORD"
+    #      valueFrom: 
+    #        configMapKeyRef:
+    #          name: db-configmap
+    #          key: "MYSQL_ROOT_PASSWORD"
+    #    - name: "MYSQL_DATABASE"
+    #      valueFrom:
+    #        configMapKeyRef:
+    #          name: db-configmap
+    #          key: "MYSQL_DATABASE" 
+    #    - name: "MYSQL_PASSWORD"
+    #      valueFrom:
+    #        configMapKeyRef:
+    #          name: db-configmap
+    #          key: "MYSQL_PASSWORD"

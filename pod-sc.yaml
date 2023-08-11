@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-sc
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:latest
+    volumeMounts:
+      - mountPath: /volume-dentro-do-container
+        name: primeiro-pv
+    # resources:
+    #   limits:
+    #     memory: "128Mi"
+    #     cpu: "500m"
+  volumes:
+    - name: primeiro-pv
+      persistentVolumeClaim:
+        claimName: pvc-2
+  ports:
+    - containerPort: 80
+
+
+  # Abrir terminal do Google Cloud Platform
+  # copiar o conteúdo desse arquivo para um arquivo lá 
+  # kubectl apply -f pod-sc.yaml
+  # kubectl get pod
+  # kubectl get pod --watch
+  
+# deleta o pod e recria para ver que o volume estará ainda lá
+# pois o ciclo de vida é completamente independente dos pods e containers
+# pois guarda através do pv e acessar através do pvc
+
+# Os dados persitidos nesse disco ficarão até apagar esse disco ou 
+# Remover o volume manualmente
+
+# kubectl exec -it pod-sc -- bash
+# cd volume-dentro-do-container
+
+
+# Foi possível criar discos e volumes dinamicamente só criando
+# POD, PVC e STORAGECLASS

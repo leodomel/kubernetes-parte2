@@ -1,0 +1,36 @@
+
+#Criando StorageClass
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: slow
+provisioner: kubernetes.io/gce-pd # Google Cloud Platform
+# NFS, iSCI, VSphereVolume, Glusterfs, local, RBD
+parameters:
+  type: pd-standard #é o padrão, mas poderia ser pd-ssd
+  fstype: ext4
+  replication-type: none #Padrão, mas se quiser replicar no cluster usa isso
+
+# Diferente do PVC que foi necessário criar manualmente
+# - um disco
+# - um pv
+# - um pvc
+
+# Com o StorageClass é possível criar PV e Discos dinamicamente
+# Ao fazer o bind de um pod com um PVC, utilizando o StorageClass,
+# será criado dinacamente o Disco e o PV, assim que o PVC for vinculado
+# a um StorageClass
+
+
+
+  # Abrir terminal do Google Cloud Platform
+  # copiar o conteúdo desse arquivo para um arquivo lá 
+  # kubectl apply -f sc.yaml
+  # kubectl get sc
+  
+# deleta o pod e recria para ver que o volume estará ainda lá
+# pois o ciclo de vida é completamente independente dos pods e containers
+# pois guarda através do pv e acessar através do pvc
+
+
+

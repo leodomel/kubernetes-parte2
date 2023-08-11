@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-1
+spec:
+  resources:
+    requests:
+      storage: 10Gi # usando o mesmo pv e accessmode e storageclass para que o pv.yaml seja utilizado
+  volumeMode: Filesystem
+  accessModes: # usando o mesmo pv e accessmode e storageclass para que o pv.yaml seja utilizado
+    - ReadWriteOnce
+  storageClassName: standard
+
+
+# o ciclo de vida do pv é independente dos pods e dos containers
+# se deletar o pod e recriar, os volumes continuarão lá
+
+
+  # Abrir terminal do Google Cloud Platform
+  # copiar o conteúdo desse arquivo para um arquivo lá 
+  # kubectl apply -f pvc.yaml
+  #kubectl get pvc
+  
+
+  # apos criado pv e pvc
+  # criar pod que utilize o pvc

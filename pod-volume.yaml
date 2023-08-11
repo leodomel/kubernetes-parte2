@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-volume
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      volumeMounts:
+        - mountPath: /volume-dentro-do-container # essa pasta acho que pode ser qualquer nome
+          name: primeiro-volume # nome do volume definido abaixo
+    - name: jenkins-container
+      image: jenkins:2.60.3 #jenkins/jenkins #Procurar imagem latest
+      volumeMounts:
+        - mountPath: /volume-dentro-do-container-jenkins
+          name: primeiro-volume
+  volumes:
+    - name: primeiro-volume
+      hostPath: 
+        path: /C/Users/leonardo.costa/Desktop/primeiro-volume
+        type: Directory #nao cria pasta caso nao exista
+        #type: DirectoryOrCreate #para criar caso exista
+
+# no docker-desktop
+#Para usar o volume precisa desativar a opção do WSL2 no windows
+# reiniciar o docker
+# Depois Settings > Resources > File Sharing e Compartilhar a pasta:
+# /C/Users/leonardo.costa/Desktop/primeiro-volume
+
+# LINUX - é uma vm, precisa criar dentro do minikube
+# minikube ssh
+# mkdir [primeiro-volume]
+
+# executar o bash passando qual o conatainer deseja acessar, pois existem 2
+# kubectl exec -it pod-volume --container nginx-container -- bash
+# OU 
+# kubectl exec -it pod-volume container nginx-container -- bash
+
+
+# Volumes
+
+# Ciclo de vida independente do container, mas dependente do pod
+# Se container falhar, e pod continuar no ar, dado permance
+
+# mas se todos os containers falharem, o pod falhará e o volume será removido
+
+
+# hostpath: host para caminho container
+
+# Se os containers falharem, o pod falhará e o volume será apagado.
+# Porém os arquivos continuarão lá no host c:\....!
+
+
+# Se criar um arquivo através do container de um, aparecerá no host e no outro container

@@ -1,0 +1,47 @@
+# Boa prática é criar deployments em vez de replicaset
+#camada acima de replicaset
+# Permite controle de versionamento
+# Contém um replicaset
+# ao rodar kubectl get rs
+# NAME                          DESIRED   CURRENT   READY   AGE
+# nginx-deployment-5c854cc8bc   3         3         3       33s
+# portal-noticias-replicaset    3         3         3       18m
+apiVersion: apps/v1
+kind: Deployment
+metadata: # é do próprio deployment
+  name: nginx-deployment
+spec: #spec do Deployment
+  replicas: 3
+  template:
+    metadata: # é do pod dentro do replicaset
+      name: nginx-pod
+      labels:
+        app: nginx-pod  # Tem que ser igual a o matchLabel do deployment
+    spec: #spec do template
+      containers:
+      - name: nginx-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        # Aponta como erro, mas no curso não fala de resources, por isso vou salvar sem eles
+        # One or more containers do not have resource limits - this could starve other processes
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+  selector: # assim como um serviço, o kubernetes não sabe que o Deploymente vai gerencias esse template, mesmo estando na mesma estrutura
+    matchLabels:
+      app: nginx-pod
+
+# Verificar versões
+# kubectl rollout history deployment nginx-deployment
+
+# Gravar o comando
+# kubectl rollout history deployment nginx-deployment --record
+
+# Mudar anotação 
+# kubectl annotate deployment nginx-deployment kubernetes.io/change-cause="Definindo a imagem com versão latest"
+
+# Voltar a versão
+# kubectl rollout undo deployment nginx-deployment --to-revision=1
+

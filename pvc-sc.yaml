@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-2
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  #volumeMode: Filesystem
+  storageClassName: slow
+  accessModes:
+    - ReadWriteOnce
+
+
+  # Abrir terminal do Google Cloud Platform
+  # copiar o conteúdo desse arquivo para um arquivo lá 
+  # kubectl apply -f sc.yaml
+  # kubectl get pvc
+  # Criado automaticamente após a vinculação do PVC com o StorageClassName,
+  # assim como o novo disco no GCP
+  # kubectl get pv
