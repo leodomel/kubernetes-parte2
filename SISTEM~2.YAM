@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sistema-noticias-deployment
+spec:
+  template:
+    metadata: # é do pod dentro do replicaset
+      name: sistema-noticias
+      labels:
+        app: sistema-noticias
+    spec:
+      containers:
+        - name: sistema-noticias-container
+          image: aluracursos/sistema-noticias:1
+          ports: #PortSSSS
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: sistema-configmap
+          livenessProbe: # para incluir essa config nao precisa reiniciar o pod, só dar apply
+          # Códigos >= 200 & < 400 => SUCESSO
+            httpGet:
+              path: / #Caminho do teste
+              port: 80 #Porta do teste
+            periodSeconds: 10 
+            # Faz a validação deste container a cada 10s
+            failureThreshold: 3 
+            #numero max de falhas toleradas antes de reiniciar o container
+            initialDelaySeconds: 20 
+            # 20s após o container subir, inicia o teste
+            # a partir de qual momento vai começar a executa esses testes, container subiu, 
+            # mas nao necessariamente está pronto para receber esses testes
+
+
+        # Aponta como erro, mas no curso não fala de resources, por isso vou salvar sem eles
+        # One or more containers do not have resource limits - this could starve other processes
+          # resources:
+          #   limits:
+          #     memory: "128Mi"
+          #     cpu: "500m"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sistema-noticias

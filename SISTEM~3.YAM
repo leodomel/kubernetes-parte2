@@ -1,0 +1,120 @@
+# Serve para pods que precisam manter o estado (stateful)
+# mantendo o conteudo a salvo em caso de exclusao ou falha
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sistema-noticias-statefulset
+spec:
+  selector:
+    matchLabels:
+      app: sistema-noticias
+  serviceName: svc-sistema-noticias #servico que gerancia esse statefulset
+  #mesmo com o seletor de label precisa indicar o servico
+  replicas: 1
+  template: #informacoes do pod que será criado
+    metadata:
+      labels:
+        app: sistema-noticias
+      name: sistema-noticias
+    spec: # especificoes desses pods
+      containers: # o que tem nesses containers
+      - name: sistema-noticias-container
+        image: aluracursos/sistema-noticias:1
+        ports:
+        - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: sistema-configmap
+        livenessProbe: # para incluir essa config nao precisa reiniciar o pod, só dar apply
+        #kubectl get pods pode demorar de mostar que está tudo ok por causa do delaydefinido
+        # Códigos >= 200 & < 400 => SUCESSO
+          httpGet: # Pode usat TCP tb
+            path: / #Caminho do teste
+            port: 80 #Porta do teste
+          periodSeconds: 10 
+          # Faz a validação deste container a cada 10s
+          failureThreshold: 3 
+          #numero max de falhas toleradas antes de reiniciar o container
+          initialDelaySeconds: 20 
+          # 20s após o container subir, inicia o teste
+          # a partir de qual momento vai começar a executa esses testes, container subiu, 
+          # mas nao necessariamente está pronto para receber esses testes
+        readinessProbe: # para incluir essa config nao precisa reiniciar o pod, só dar apply
+        # Códigos >= 200 & < 400 => SUCESSO
+          httpGet:
+            path: /inserir_noticias.php #Caminho do teste
+            port: 80 #Porta do teste
+          periodSeconds: 10 
+          # Faz a validação deste container a cada 10s
+          failureThreshold: 5 
+          # SE NÃO CONSEGUIR ENVIAR AS REQUISIÇÕES NAS 3X, NA 4a VEZ VAI ENVIAR MESMO ASSIM, 
+          # PASSARÁ A IGNORAR ESSE READNISSEPROBE, POR ISSO DEFINIR NUMERO MAIOR QUE LIVENESS
+          initialDelaySeconds: 3
+          # 3s após o container subir, inicia o teste
+          # a partir de qual momento vai começar a executa esses testes, container subiu, 
+          # mas nao necessariamente está pronto para receber esses testes
+        #startupProbe:
+          # Há um terceiro tipo de probe voltado para aplicações legadas, o Startup Probe.
+          # Algumas aplicações legadas exigem tempo adicional para inicializar na primeira vez.
+          # Nem sempre Liveness ou Readiness Probes vão conseguir resolver de maneira simples os problemas de inicialização de aplicações legadas. 
+          # Mais informações sobre Startup Probes podem ser adquiridas por aqui.
+          # https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+        volumeMounts:
+          - name: imagens
+            mountPath: /var/www/html/uploads
+          - name: sessao
+            mountPath: /tmp
+      volumes:
+        - name: imagens
+          persistentVolumeClaim:
+            claimName: imagens-pvc
+        - name: sessao
+          persistentVolumeClaim:
+            claimName: sessao-pvc
+  # volumeClaimTemplates:
+  # - metadata:
+  #     name: www
+  #   spec:
+  #     accessModes: [ "ReadWriteOnce" ]
+  #     resources:
+  #       requests:
+  #         storage: 1Gi
+
+# Vamos substituir o sistema-noticias-deployment
+
+# kubectl delete deployments sistema-noticias-deployment
+# kubectl apply -f .\sistema_noticias\sistema-noticias-statefulset.yaml
+
+
+#kubectl delete pod sistema-noticias-statefulset-0
+# Após comando é recriado automaticamente
+# Mas precisa criar um Storageclass
+
+
+
+
+
+# Não existe
+#kubectl get pv
+
+# Existe um SC default
+
+# NAME                 PROVISIONER          RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+# hostpath (default)   docker.io/hostpath   Delete          Immediate           false                  23h
+
+# Por isso ao aplicar os PVC, o SC defaul já cria PVs, de acordo com o
+# requisitado nos PVCs
+
+# kubectl apply -f sistema_noticias\sessao-pvc.yaml
+# kubectl apply -f sistema_noticias\imagens-pvc.yaml
+
+# kubectl get pv
+
+# NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                 STORAGECLASS   REASON   AGE
+# pvc-3ccc1300-eb70-4312-9b2b-de883af83317   1Gi        RWO            Delete           Bound    default/sessao-pvc    hostpath                5s
+# pvc-9c3f872a-f9d4-48b7-86da-a854663f8f02   1Gi        RWO            Delete           Bound    default/imagens-pvc   hostpath                11s
+
+
+
+

@@ -1,0 +1,37 @@
+apiVersion: autoscaling/v2 #v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: portal-noticias-hpa
+spec:
+  scaleTargetRef: #Qual o alvo que será escalado automaticamente?
+    apiVersion: apps/v1 # api do alvo
+    kind: Deployment #tipo do alvo
+    name: portal-noticias-deployment
+  minReplicas: 1
+  maxReplicas: 3 #nunca passará de 10 replicas
+  metrics: #qual o criterio sera utilizado
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50 
+      # consumo media nao passará de 50% do valor definido no resource request do pod
+
+
+# nao reconheceu as replicas e nem quanto esta usando
+
+# kubectl get hpa
+# NAME                  REFERENCE          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+# portal-noticias-hpa   Deployment/portal-noticias-deployment   <unknown>/50%   1         3         3          5m51s
+
+
+# Precisa do servidor de métricas
+
+# kubectl describe hpa portal-noticias-hpa
+# Events:
+#   Type     Reason                        Age                  From                       Message
+#   ----     ------                        ----                 ----                       -------
+#   Warning  FailedGetScale                82s (x4 over 4m22s)  horizontal-pod-autoscaler  deployments/scale.apps "myapp" not found
+#   Warning  FailedGetResourceMetric       22s                  horizontal-pod-autoscaler  failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)
+#   Warning  FailedComputeMetricsReplicas  22s                  horizontal-pod-autoscaler  invalid metrics (1 invalid out of 1), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: unable to fetch metrics from resource metrics API: the server could not find the requested resource (get pods.metrics.k8s.io)

@@ -1,0 +1,86 @@
+# Boa prática é criar deployments em vez de replicaset
+#camada acima de replicaset
+# Permite controle de versionamento
+# Contém um replicaset
+# ao rodar kubectl get rs
+# NAME                          DESIRED   CURRENT   READY   AGE
+# nginx-deployment-5c854cc8bc   3         3         3       33s
+# portal-noticias-replicaset    3         3         3       18m
+apiVersion: apps/v1
+kind: Deployment
+metadata: # é do próprio deployment
+  name: portal-noticias-deployment
+spec: #spec do Deployment
+  replicas: 3
+  template:
+    metadata: # é do pod dentro do deployment
+      name: portal-noticias
+      labels:
+        app: portal-noticias  # Tem que ser igual a o matchLabel do deployment
+    spec: #spec do template
+      containers:
+      - name: portal-noticias-container
+        image: aluracursos/portal-noticias:1
+        ports:
+        - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: portal-configmap
+        livenessProbe: # para incluir essa config nao precisa reiniciar o pod, só dar apply
+        # Códigos >= 200 & < 400 => SUCESSO
+          httpGet:
+            path: / #Caminho do teste
+            port: 80 #Porta do teste
+          periodSeconds: 10 
+          # Faz a validação deste container a cada 10s
+          failureThreshold: 3 
+          #numero max de falhas toleradas antes de reiniciar o container
+          initialDelaySeconds: 20 
+          # 20s após o container subir, inicia o teste
+          # a partir de qual momento vai começar a executa esses testes, container subiu, 
+          # mas nao necessariamente está pronto para receber esses testes
+        readinessProbe: # para incluir essa config nao precisa reiniciar o pod, só dar apply
+        # Códigos >= 200 & < 400 => SUCESSO
+          httpGet:
+            path: / #Caminho do teste
+            port: 80 #Porta do teste
+          periodSeconds: 10 
+          # Faz a validação deste container a cada 10s
+          failureThreshold: 5 
+          # SE NÃO CONSEGUIR ENVIAR AS REQUISIÇÕES NAS 3X, NA 4a VEZ VAI ENVIAR MESMO ASSIM, 
+          # PASSARÁ A IGNORAR ESSE READNISSEPROBE, POR ISSO DEFINIR NUMERO MAIOR QUE LIVENESS
+          initialDelaySeconds: 3
+          # 3s após o container subir, inicia o teste
+          # a partir de qual momento vai começar a executa esses testes, container subiu, 
+          # mas nao necessariamente está pronto para receber esses testes
+        resources: #horizontal pod autoescaler - hpa - precisa dessa informacao
+          requests:
+            cpu: "10m" 
+            # Cada pod que contenha um container desse vai pedir 10 milicores de cpu
+
+
+        # Aponta como erro, mas no curso não fala de resources, por isso vou salvar sem eles
+        # One or more containers do not have resource limits - this could starve other processes
+          # resources:
+          #   limits:
+          #     memory: "128Mi"
+          #     cpu: "500m"
+  selector: # assim como um serviço, o kubernetes não sabe que o Deploymente vai gerencias esse template, mesmo estando na mesma estrutura
+    matchLabels:
+      app: portal-noticias
+
+# Verificar versões
+# kubectl rollout history deployment nginx-deployment
+
+# Gravar o comando
+# kubectl rollout history deployment nginx-deployment --record
+
+# Mudar anotação 
+# kubectl annotate deployment nginx-deployment kubernetes.io/change-cause="Definindo a imagem com versão latest"
+
+# Voltar a versão
+# kubectl rollout undo deployment nginx-deployment --to-revision=1
+
+# Deletando deployment
+# kubectl delete deployment nginx-deployment
+
